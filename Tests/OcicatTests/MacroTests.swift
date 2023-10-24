@@ -17,7 +17,7 @@ final class MacroTests: XCTestCase {
                 }
             }
             
-            private static var keyToObject: Void?
+            fileprivate static var keyToObject: Void?
             """
         } originalSource: {
             """
@@ -43,7 +43,7 @@ final class MacroTests: XCTestCase {
                 }
             }
             
-            private static var keyToNonOptional: Void?
+            fileprivate static var keyToNonOptional: Void?
             """
         } originalSource: {
             """
@@ -68,7 +68,7 @@ final class MacroTests: XCTestCase {
                 }
             }
             
-            private static var keyToUnwrappedObject: Void?
+            fileprivate static var keyToUnwrappedObject: Void?
             """
         } originalSource: {
             """
@@ -94,7 +94,7 @@ final class MacroTests: XCTestCase {
                 }
             }
             
-            private static var keyToWeakRef: Void?
+            fileprivate static var keyToWeakRef: Void?
             """
         } originalSource: {
             """
