@@ -11,77 +11,79 @@ import SwiftSyntaxMacros
 
 struct StringArgumentsResolver {
     struct Error: Swift.Error, CustomStringConvertible {
-        let index: Int
+        let index: SyntaxChildrenIndex
         
         var description: String {
             "Argument is invalid. Accept only contiguous, non-interpolated literal String objects"
         }
     }
     
-    let arguments: [String]
-    
-    init(arguments: LabeledExprListSyntax) throws {
-        let expressions = try Self.getExpressions(of: arguments)
-        self.arguments = try Self.getStrings(from: expressions)
+    struct LabeledArgument {
+        let label: String?
+        let value: String?
     }
     
-    static func getExpressions(
-        of arguments: LabeledExprListSyntax
-    ) throws -> [StringLiteralExprSyntax] {
-        try ensureAllArgumentsAreStringLiteral(arguments)
-        return arguments.map {
-            $0.expression.as(StringLiteralExprSyntax.self)!
-        }
-        
-        
-        func ensureAllArgumentsAreStringLiteral(
-            _ arguments: LabeledExprListSyntax
-        ) throws {
-            let nonStringIndex = arguments.firstIndex {
-                !$0.expression.is(StringLiteralExprSyntax.self)
-            }
-            guard nonStringIndex == nil else {
-                let index = arguments.distance(
-                    from: arguments.startIndex,
-                    to: nonStringIndex!
-                )
-                throw Error(index: index)
-            }
+    var nonNilStringArguments: [String] {
+        arguments.compactMap {
+            $0.value
         }
     }
     
-    static func getStrings(
-        from expressions: [StringLiteralExprSyntax]
-    ) throws -> [String] {
-        try ensureAllExpressionsHaveSingleSegment(expressions)
-        let segments = expressions.map(\.segments.first!)
-        return try convertToStringSegments(segments).map(\.content.text)
-        
-
-        func ensureAllExpressionsHaveSingleSegment(
-            _ expressions: [StringLiteralExprSyntax]
-        ) throws {
-            let nonSingleSegmentedIndex = expressions.firstIndex {
-                $0.segments.count != 1
-            }
-            guard nonSingleSegmentedIndex == nil else {
-                throw Error(index: nonSingleSegmentedIndex!)
-            }
+    var stringArguments: [String?] {
+        arguments.map(\.value)
+    }
+    
+    let arguments: [LabeledArgument]
+    
+    func argument(by label: String) -> String? {
+        arguments.first { $0.label == label }?.value
+    }
+    
+    init(arguments rawArguments: LabeledExprListSyntax) throws {
+        arguments = try rawArguments.indices.map {
+            try Self.resolveArgument(at: $0, in: rawArguments)
+        }
+    }
+    
+    static func resolveArgument(
+        at index: SyntaxChildrenIndex,
+        in rawArguments: LabeledExprListSyntax
+    ) throws -> LabeledArgument {
+        let expression = rawArguments[index].expression
+        let label = rawArguments[index].label?.text
+        if expressionIsNil() {
+            return LabeledArgument(label: label, value: nil)
+        } else if let string = try getString() {
+            return LabeledArgument(label: label, value: string)
+        } else {
+            throw Error(index: index)
         }
         
-        func convertToStringSegments(
-            _ segments: [StringLiteralSegmentListSyntax.Element]
-        ) throws -> [StringSegmentSyntax] {
-            let segments = expressions.map(\.segments.first!)
-            let nonLiteralIndex = segments.firstIndex {
-                !$0.is(StringSegmentSyntax.self)
-            }
-            guard nonLiteralIndex == nil else {
-                throw Error(index: nonLiteralIndex!)
-            }
-            return segments.map {
-                $0.as(StringSegmentSyntax.self)!
+        
+        func expressionIsNil() -> Bool {
+            expression.is(NilLiteralExprSyntax.self)
+        }
+        
+        func getString() throws -> String? {
+            if let expression = expression.as(StringLiteralExprSyntax.self) {
+                if let string = Self.getString(from: expression) {
+                    return string
+                } else {
+                    throw Error(index: index)
+                }
+            } else {
+                return nil
             }
         }
+    }
+    
+    static func getString(
+        from expression: StringLiteralExprSyntax
+    ) -> String? {
+        guard expression.segments.count == 1 else {
+            return nil
+        }
+        let segment = expression.segments.first!
+        return segment.as(StringSegmentSyntax.self)?.content.text
     }
 }

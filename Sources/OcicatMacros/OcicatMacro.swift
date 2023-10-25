@@ -12,14 +12,18 @@ struct OcicatPlugin: CompilerPlugin {
     ]
 }
 
-func getterExpression(by keyName: String) -> String {
-    "ObjcWrapper.get(from: self, by: &\(keyName))"
+func getterExpression(keyName: String, source: String) -> String {
+    "ObjcWrapper.get(from: \(source), by: &\(keyName))"
 }
 
-func setterExpression(by keyName: String) -> String {
-    "ObjcWrapper.save(newValue, into: self, by: &\(keyName))"
+func setterExpression(keyName: String, source: String) -> String {
+    "ObjcWrapper.save(newValue, into: \(source), by: &\(keyName))"
 }
 
-func weakSetterExpression(by keyName: String) -> String {
-    "ObjcWrapper.saveWeakReference(to: newValue, into: self, by: &\(keyName))"
+func weakSetterExpression(keyName: String, source: String) -> String {
+    "ObjcWrapper.saveWeakReference(to: newValue, into: \(source), by: &\(keyName))"
+}
+
+var defaultSource: String {
+    "self"
 }

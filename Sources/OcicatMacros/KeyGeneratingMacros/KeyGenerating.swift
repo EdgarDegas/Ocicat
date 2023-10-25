@@ -21,22 +21,10 @@ extension KeyGenerating {
             let resolver = try KeyNameArgumentsResolver(arguments: arguments)
             return resolver.keyNameDeclarations
         } catch let error as StringArgumentsResolver.Error {
-            diagnoseArgumentsError(error, among: arguments, in: context)
+            context.addDiagnostics(from: error, node: arguments[error.index])
             return []
         } catch {
             fatalError()
         }
-    }
-    
-    static func diagnoseArgumentsError(
-        _ error: StringArgumentsResolver.Error,
-        among arguments: LabeledExprListSyntax,
-        in context: some MacroExpansionContext
-    ) {
-        let index = arguments.index(
-            arguments.startIndex,
-            offsetBy: error.index
-        )
-        context.addDiagnostics(from: error, node: arguments[index])
     }
 }

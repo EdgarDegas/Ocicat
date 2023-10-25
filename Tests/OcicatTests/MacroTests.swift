@@ -131,6 +131,56 @@ final class MacroTests: XCTestCase {
         #endif
     }
     
+    func testCustomSourcedObject() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.ocicated) {
+            """
+            var customSourcedObject: Int? {
+                get {
+                    ObjcWrapper.get(from: notSelf, by: &Self.keyToCustomSourcedObject) as? Int
+                }
+                set {
+                    ObjcWrapper.save(newValue, into: notSelf, by: &Self.keyToCustomSourcedObject)
+                }
+            }
+            
+            fileprivate static var keyToCustomSourcedObject: Void?
+            """
+        } originalSource: {
+            """
+            @\($0)(source: "notSelf")
+            var customSourcedObject: Int?
+            """
+        }
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
+    func testCustomSourcedCustomKeyedObject() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.ocicated) {
+            """
+            var customizedObject: Int? {
+                get {
+                    ObjcWrapper.get(from: customSource, by: &customKey) as? Int
+                }
+                set {
+                    ObjcWrapper.save(newValue, into: customSource, by: &customKey)
+                }
+            }
+            """
+        } originalSource: {
+            """
+            @\($0)(source: "customSource", keyName: "customKey")
+            var customizedObject: Int?
+            """
+        }
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
     func testKeys() throws {
         #if canImport(OcicatMacros)
         assertMacroExpansion(.keys) {
@@ -267,7 +317,7 @@ final class MacroTests: XCTestCase {
             """
             #\($0[0])("one", "two")
             
-            @\($0[1])(customKeyName: "Keys.one")
+            @\($0[1])(keyName: "Keys.one")
             var customKeyedObject: Int?
             """
         }

@@ -15,7 +15,7 @@ struct KeyNameArgumentsResolver {
     
     init(arguments: LabeledExprListSyntax) throws {
         variadicStringResolver = try StringArgumentsResolver(arguments: arguments)
-        keyNameDeclarations = variadicStringResolver.arguments
+        keyNameDeclarations = variadicStringResolver.nonNilStringArguments
             .map {
                 "static var \(raw: $0): Void?"
             }

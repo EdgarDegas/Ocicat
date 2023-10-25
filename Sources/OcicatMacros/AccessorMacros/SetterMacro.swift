@@ -14,6 +14,6 @@ public struct SetterMacro: ExpressionMacro, AccessorExpandable {
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
         let keyName = try getKeyName(from: node.argumentList)
-        return "\(raw: setterExpression(by: keyName))"
+        return "\(raw: setterExpression(keyName: keyName, source: defaultSource))"
     }
 }

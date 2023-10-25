@@ -14,7 +14,7 @@ protocol AccessorExpandable {
 extension AccessorExpandable {
     static func getKeyName(from arguments: LabeledExprListSyntax) throws -> String {
         let resolver = try StringArgumentsResolver(arguments: arguments)
-        guard let keyName = resolver.arguments.first else {
+        guard let keyName = resolver.nonNilStringArguments.first else {
             // guranteed by the compiler to have one and only one argument
             fatalError("Argument key name missing")
         }

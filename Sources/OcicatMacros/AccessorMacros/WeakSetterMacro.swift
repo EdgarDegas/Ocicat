@@ -14,6 +14,6 @@ public struct WeakSetterMacro: ExpressionMacro, AccessorExpandable {
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
         let keyName = try getKeyName(from: node.argumentList)
-        return "\(raw: weakSetterExpression(by: keyName))"
+        return "\(raw: weakSetterExpression(keyName: keyName, source: defaultSource))"
     }
 }

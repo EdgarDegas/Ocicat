@@ -44,11 +44,15 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [DeclSyntax] {
         let argumentResolver = try ArgumentResolver(node: node)
-        if argumentResolver.customKey != nil {
+        if argumentResolver.keyName != nil {
             return []
         } else {
-            let resolver = try Resolver(declaration: declaration, customKeyName: nil)
-            return ["fileprivate static var \(resolver.keyName): Void?"]
+            let resolver = try Resolver(
+                declaration: declaration, 
+                customKeyName: nil,
+                customSource: nil
+            )
+            return ["fileprivate static var \(raw: resolver.keyName): Void?"]
         }
     }
     
@@ -58,7 +62,11 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [SwiftSyntax.AccessorDeclSyntax] {
         let argumentResolver = try ArgumentResolver(node: node)
-        let resolver = try Resolver(declaration: declaration, customKeyName: argumentResolver.customKey)
+        let resolver = try Resolver(
+            declaration: declaration,
+            customKeyName: argumentResolver.keyName,
+            customSource: argumentResolver.source
+        )
         return [
             """
             get {
@@ -72,28 +80,25 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
     }
     
     struct ArgumentResolver {
-        private let expression: StringLiteralExprSyntax?
-        let customKey: TokenSyntax?
-        
-        init(node: AttributeSyntax) throws {
-            guard let expression = Self.getExpression(from: node) else {
-                expression = nil
-                customKey = nil
-                return
-            }
-            self.expression = expression
-            
-            guard
-                expression.segments.count == 1,
-                let keyName = Self.getKeyName(from: expression.segments)
-            else {
-                throw Error.invalidCustomKey
-            }
-            customKey = keyName
+        enum ArgumentLabel: String {
+            case keyName
+            case source
         }
         
-        static func getExpression(from node: AttributeSyntax) -> StringLiteralExprSyntax? {
-            node.arguments?.as(LabeledExprListSyntax.self)?.first?.expression.as(StringLiteralExprSyntax.self)
+        let keyName: String?
+        let source: String?
+        
+        init(node: AttributeSyntax) throws {
+            guard let arguments = node.arguments?.as(LabeledExprListSyntax.self) else {
+                keyName = nil
+                source = nil
+                return
+            }
+            let stringArgumentsResolver = try StringArgumentsResolver(
+                arguments: arguments
+            )
+            keyName = stringArgumentsResolver.argument(by: ArgumentLabel.keyName.rawValue)
+            source = stringArgumentsResolver.argument(by: ArgumentLabel.source.rawValue)
         }
         
         static func getKeyName(from segments: StringLiteralSegmentListSyntax) -> TokenSyntax? {
@@ -104,18 +109,19 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
     struct Resolver {
         let declaration: VariableDeclSyntax
         let binding: PatternBindingSyntax
-        let variableName: TokenSyntax
+        let variableName: String
         let typeAnnotation: TypeAnnotationSyntax
-        let customKeyName: TokenSyntax?
+        let customKeyName: String?
+        let source: String
         
         var defaultValue: ExprSyntax?
         
-        var keyName: TokenSyntax {
-            let variableName = variableName.text
-            return "keyTo\(raw: variableName.first!.uppercased())\(raw: variableName.dropFirst())"
+        var keyName: String {
+            let variableName = variableName
+            return "keyTo\(variableName.first!.uppercased())\(variableName.dropFirst())"
         }
         
-        var key: TokenSyntax {
+        var key: String {
             if let customKeyName = customKeyName {
                 return customKeyName
             } else {
@@ -152,7 +158,7 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         }
         
         var getter: String {
-            let getter = getterExpression(by: key.text)
+            let getter = getterExpression(keyName: key, source: source)
             if isOptional || isImplicitlyUnwrapped {
                 return "\(getter) as? \(wrappedType)"
             } else {
@@ -162,17 +168,19 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         
         var setter: String {
             if isWeak {
-                return weakSetterExpression(by: key.text)
+                return weakSetterExpression(keyName: key, source: source)
             } else {
-                return setterExpression(by: key.text)
+                return setterExpression(keyName: key, source: source)
             }
         }
         
         init(
             declaration: some DeclSyntaxProtocol,
-            customKeyName: TokenSyntax?
+            customKeyName: String?,
+            customSource: String?
         ) throws {
             self.customKeyName = customKeyName
+            self.source = customSource ?? defaultSource
             
             guard let declaration = declaration.as(VariableDeclSyntax.self) else {
                 throw Error.onlyApplicableToVariables
@@ -222,11 +230,11 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
             return binding
         }
         
-        static func getNameOfVariable(from binding: PatternBindingSyntax) throws -> TokenSyntax {
+        static func getNameOfVariable(from binding: PatternBindingSyntax) throws -> String {
             guard let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier else {
                 throw Error.patternBindingNotIdentifiable
             }
-            return name
+            return name.text
         }
     }
 }

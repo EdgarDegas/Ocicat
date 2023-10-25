@@ -4,7 +4,26 @@
 
 @attached(accessor)
 @attached(peer, names: arbitrary)
-public macro Ocicated(keyName: StringLiteralType? = nil) = #externalMacro(
+public macro Ocicated(
+    keyName: StringLiteralType
+) = #externalMacro(
+    module: "OcicatMacros", type: "AssociatedVariableMacro"
+)
+
+@attached(accessor)
+@attached(peer, names: arbitrary)
+public macro Ocicated(
+    source: StringLiteralType
+) = #externalMacro(
+    module: "OcicatMacros", type: "AssociatedVariableMacro"
+)
+
+@attached(accessor)
+@attached(peer, names: arbitrary)
+public macro Ocicated(
+    source: StringLiteralType,
+    keyName: StringLiteralType
+) = #externalMacro(
     module: "OcicatMacros", type: "AssociatedVariableMacro"
 )
 
