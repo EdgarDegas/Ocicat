@@ -122,7 +122,7 @@ final class MacroTests: XCTestCase {
             """
         } originalSource: {
             """
-            @\($0)(keyName: "customKey")
+            @\($0)(key: "customKey")
             var customKeyedObject: Int?
             """
         }
@@ -172,7 +172,7 @@ final class MacroTests: XCTestCase {
             """
         } originalSource: {
             """
-            @\($0)(source: "customSource", keyName: "customKey")
+            @\($0)(source: "customSource", key: "customKey")
             var customizedObject: Int?
             """
         }
@@ -317,7 +317,7 @@ final class MacroTests: XCTestCase {
             """
             #\($0[0])("one", "two")
             
-            @\($0[1])(keyName: "Keys.one")
+            @\($0[1])(key: "Keys.one")
             var customKeyedObject: Int?
             """
         }

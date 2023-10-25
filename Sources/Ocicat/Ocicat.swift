@@ -5,7 +5,7 @@
 @attached(accessor)
 @attached(peer, names: arbitrary)
 public macro Ocicated(
-    keyName: StringLiteralType
+    key: StringLiteralType
 ) = #externalMacro(
     module: "OcicatMacros", type: "AssociatedVariableMacro"
 )
@@ -22,7 +22,7 @@ public macro Ocicated(
 @attached(peer, names: arbitrary)
 public macro Ocicated(
     source: StringLiteralType,
-    keyName: StringLiteralType
+    key: StringLiteralType
 ) = #externalMacro(
     module: "OcicatMacros", type: "AssociatedVariableMacro"
 )
@@ -44,17 +44,17 @@ public macro AddKeys(_: StringLiteralType...) = #externalMacro(
 )
 
 @freestanding(expression)
-public macro getter(by keyName: StringLiteralType) = #externalMacro(
+public macro getter(by key: StringLiteralType) = #externalMacro(
     module: "OcicatMacros", type: "GetterMacro"
 )
 
 
 @freestanding(expression)
-public macro setter(by keyName: StringLiteralType) = #externalMacro(
+public macro setter(by key: StringLiteralType) = #externalMacro(
     module: "OcicatMacros", type: "SetterMacro"
 )
 
 @freestanding(expression)
-public macro weakSetter(by keyName: StringLiteralType) = #externalMacro(
+public macro weakSetter(by key: StringLiteralType) = #externalMacro(
     module: "OcicatMacros", type: "WeakSetterMacro"
 )

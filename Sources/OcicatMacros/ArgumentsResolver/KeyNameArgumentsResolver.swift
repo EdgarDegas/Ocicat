@@ -8,14 +8,14 @@
 import Foundation
 import SwiftSyntax
 
-struct KeyNameArgumentsResolver {
+struct KeyArgumentsResolver {
     let variadicStringResolver: StringArgumentsResolver
     
-    let keyNameDeclarations: [DeclSyntax]
+    let keyDeclarations: [DeclSyntax]
     
     init(arguments: LabeledExprListSyntax) throws {
         variadicStringResolver = try StringArgumentsResolver(arguments: arguments)
-        keyNameDeclarations = variadicStringResolver.nonNilStringArguments
+        keyDeclarations = variadicStringResolver.nonNilStringArguments
             .map {
                 "static var \(raw: $0): Void?"
             }

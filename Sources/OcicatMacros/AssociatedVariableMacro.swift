@@ -44,15 +44,15 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [DeclSyntax] {
         let argumentResolver = try ArgumentResolver(node: node)
-        if argumentResolver.keyName != nil {
+        if argumentResolver.key != nil {
             return []
         } else {
             let resolver = try Resolver(
                 declaration: declaration, 
-                customKeyName: nil,
+                customKey: nil,
                 customSource: nil
             )
-            return ["fileprivate static var \(raw: resolver.keyName): Void?"]
+            return ["fileprivate static var \(raw: resolver.nameOfDefaultKey): Void?"]
         }
     }
     
@@ -64,7 +64,7 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         let argumentResolver = try ArgumentResolver(node: node)
         let resolver = try Resolver(
             declaration: declaration,
-            customKeyName: argumentResolver.keyName,
+            customKey: argumentResolver.key,
             customSource: argumentResolver.source
         )
         return [
@@ -81,27 +81,27 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
     
     struct ArgumentResolver {
         enum ArgumentLabel: String {
-            case keyName
+            case key
             case source
         }
         
-        let keyName: String?
+        let key: String?
         let source: String?
         
         init(node: AttributeSyntax) throws {
             guard let arguments = node.arguments?.as(LabeledExprListSyntax.self) else {
-                keyName = nil
+                key = nil
                 source = nil
                 return
             }
             let stringArgumentsResolver = try StringArgumentsResolver(
                 arguments: arguments
             )
-            keyName = stringArgumentsResolver.argument(by: ArgumentLabel.keyName.rawValue)
+            key = stringArgumentsResolver.argument(by: ArgumentLabel.key.rawValue)
             source = stringArgumentsResolver.argument(by: ArgumentLabel.source.rawValue)
         }
         
-        static func getKeyName(from segments: StringLiteralSegmentListSyntax) -> TokenSyntax? {
+        static func getKey(from segments: StringLiteralSegmentListSyntax) -> TokenSyntax? {
             segments.first?.as(StringSegmentSyntax.self)?.content
         }
     }
@@ -111,21 +111,21 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         let binding: PatternBindingSyntax
         let variableName: String
         let typeAnnotation: TypeAnnotationSyntax
-        let customKeyName: String?
+        let customKey: String?
         let source: String
         
         var defaultValue: ExprSyntax?
         
-        var keyName: String {
+        var nameOfDefaultKey: String {
             let variableName = variableName
             return "keyTo\(variableName.first!.uppercased())\(variableName.dropFirst())"
         }
         
         var key: String {
-            if let customKeyName = customKeyName {
-                return customKeyName
+            if let customKey = customKey {
+                return customKey
             } else {
-                return "Self.\(keyName)"
+                return "Self.\(nameOfDefaultKey)"
             }
         }
         
@@ -158,7 +158,7 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         }
         
         var getter: String {
-            let getter = getterExpression(keyName: key, source: source)
+            let getter = getterExpression(key: key, source: source)
             if isOptional || isImplicitlyUnwrapped {
                 return "\(getter) as? \(wrappedType)"
             } else {
@@ -168,18 +168,18 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         
         var setter: String {
             if isWeak {
-                return weakSetterExpression(keyName: key, source: source)
+                return weakSetterExpression(key: key, source: source)
             } else {
-                return setterExpression(keyName: key, source: source)
+                return setterExpression(key: key, source: source)
             }
         }
         
         init(
             declaration: some DeclSyntaxProtocol,
-            customKeyName: String?,
+            customKey: String?,
             customSource: String?
         ) throws {
-            self.customKeyName = customKeyName
+            self.customKey = customKey
             self.source = customSource ?? defaultSource
             
             guard let declaration = declaration.as(VariableDeclSyntax.self) else {

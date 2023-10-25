@@ -20,7 +20,7 @@ For protocol extensions, you need to declare your own keys, like this:
 private #Keys("keyToTask", "someOtherKey")
 
 extension SomeProtocol {
-    @Ocicated(keyName: "Keys.keyToTask")  // don't miss the Keys. prefix here
+    @Ocicated(key: "Keys.keyToTask")  // don't miss the Keys. prefix here
     var task: SomeTask?
 }
 ```
@@ -34,7 +34,7 @@ struct MyKeys {
 }
 
 extension SomeProtocol {
-    @Ocicated(keyName: "MyKeys.key1")  // do add type name, in this case MyKeys., before the key name
+    @Ocicated(key: "MyKeys.key1")  // do add type name, in this case MyKeys., before key
     var task: SomeTask?
 }
 ```
@@ -133,7 +133,7 @@ For protocols, Ocicat cannot generate static variable keys for you, so you need 
 private #Keys("keyToTask", "someOtherKey")
 
 extension SomeProtocol {
-    @Ocicated(keyName: "Keys.keyToTask")
+    @Ocicated(key: "Keys.keyToTask")
     var task: SomeTask?
 }
 ```
@@ -169,7 +169,7 @@ struct MyKeys {
 }
 
 extension SomeProtocol {
-    @Ocicated(keyName: "MyKeys.key1")
+    @Ocicated(key: "MyKeys.key1")
     var task: SomeTask?
 }
 ```
@@ -197,6 +197,6 @@ extension SomeProtocol {
 }
 ```
 
-Please note that both `#Keys(String...)` and `#AddKeys(String...)`, as well as `#Ocicated(keyName: String)`, only accept string literals as input. In the source code, you can see that these macros actually accept `StringLiteralType` rather than `String`. The use of `String` in this document is for ease of understanding.
+Please note that both `#Keys(String...)` and `#AddKeys(String...)`, as well as `#Ocicated(key: String)`, only accept string literals as input. In the source code, you can see that these macros actually accept `StringLiteralType` rather than `String`. The use of `String` in this document is for ease of understanding.
 
-Fortunately, if you provide an incorrect key name in `#Ocicated(keyName: String)`, the compiler can catch such spelling errors. When using `#Keys(String...)`, be mindful not to omit the `Keys.` prefix for key names, and when using `AddKeys(String...)`, be sure to prefix it with the name of your type.
+Fortunately, if you provide an incorrect key in `#Ocicated(key: String)`, the compiler can catch such spelling errors. When using `#Keys(String...)`, be mindful not to omit the `Keys.` prefix for keys, and when using `AddKeys(String...)`, be sure to prefix it with the name of your type.

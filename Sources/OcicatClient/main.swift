@@ -37,7 +37,7 @@ protocol SomeProtocol {
 private #Keys("keyToTask", "someOtherKey")
 
 //extension SomeProtocol {
-//    @Ocicated(keyName: "Keys.keyToTask")
+//    @Ocicated(key: "Keys.keyToTask")
 //    var task: SomeTask?
 //}
 
@@ -48,6 +48,6 @@ struct MyKeys {
 }
 
 extension SomeProtocol {
-    @Ocicated(keyName: "MyKeys.key1")
+    @Ocicated(key: "MyKeys.key1")
     var task: SomeTask?
 }

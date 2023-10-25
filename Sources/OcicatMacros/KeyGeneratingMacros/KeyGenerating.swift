@@ -18,8 +18,8 @@ extension KeyGenerating {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         do {
-            let resolver = try KeyNameArgumentsResolver(arguments: arguments)
-            return resolver.keyNameDeclarations
+            let resolver = try KeyArgumentsResolver(arguments: arguments)
+            return resolver.keyDeclarations
         } catch let error as StringArgumentsResolver.Error {
             context.addDiagnostics(from: error, node: arguments[error.index])
             return []

@@ -13,7 +13,7 @@ public struct SetterMacro: ExpressionMacro, AccessorExpandable {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
-        let keyName = try getKeyName(from: node.argumentList)
-        return "\(raw: setterExpression(keyName: keyName, source: defaultSource))"
+        let key = try getKey(from: node.argumentList)
+        return "\(raw: setterExpression(key: key, source: defaultSource))"
     }
 }
