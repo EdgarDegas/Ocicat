@@ -6,7 +6,7 @@ import SwiftSyntaxMacros
 @main
 struct OcicatPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
-        AccessorAndKeyMacro.self,
+        AssociatedVariableMacro.self,
         DeclareKeysMacro.self,
         AddKeyMembersMacro.self
     ]

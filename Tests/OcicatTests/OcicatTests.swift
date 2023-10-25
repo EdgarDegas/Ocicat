@@ -29,7 +29,7 @@ enum TestMacro: CaseIterable {
     var type: Macro.Type {
         switch self {
         case .ocicated:
-            return AccessorAndKeyMacro.self
+            return AssociatedVariableMacro.self
         case .keys:
             return DeclareKeysMacro.self
         case .addKeys:

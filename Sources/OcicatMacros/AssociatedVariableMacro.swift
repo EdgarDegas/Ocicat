@@ -8,7 +8,7 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
+public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
     public enum Error: Swift.Error, CustomStringConvertible {
         case onlyApplicableToVariables
         case failedToFindPatternBinding

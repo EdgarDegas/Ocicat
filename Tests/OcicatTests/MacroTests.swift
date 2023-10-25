@@ -163,7 +163,7 @@ final class MacroTests: XCTestCase {
             """
         }, diagnostics: [
             DiagnosticSpec(
-                message: "Accept only literal strings, not even references to String objects",
+                message: "Argument is invalid. Accept only contiguous, non-interpolated literal String objects",
                 line: 2,
                 column: 14
             )
@@ -233,7 +233,7 @@ final class MacroTests: XCTestCase {
             """
         }, diagnostics: [
             DiagnosticSpec(
-                message: "Accept only literal strings, not even references to String objects",
+                message: "Argument is invalid. Accept only contiguous, non-interpolated literal String objects",
                 line: 2,
                 column: 16
             )

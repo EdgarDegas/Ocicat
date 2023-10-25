@@ -10,17 +10,11 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 
 struct StringArgumentsResolver {
-    enum Error: Swift.Error, CustomStringConvertible {
-        case acceptOnlyStringLiterals(index: Int)
-        case invalidArgument(index: Int)
+    struct Error: Swift.Error, CustomStringConvertible {
+        let index: Int
         
         var description: String {
-            switch self {
-            case .acceptOnlyStringLiterals:
-                "Accept only literal strings, not even references to String objects"
-            case .invalidArgument:
-                "Argument is invalid. Accept only contiguous, non-interpolated literal String objects"
-            }
+            "Argument is invalid. Accept only contiguous, non-interpolated literal String objects"
         }
     }
     
@@ -51,7 +45,7 @@ struct StringArgumentsResolver {
                     from: arguments.startIndex,
                     to: nonStringIndex!
                 )
-                throw Error.acceptOnlyStringLiterals(index: index)
+                throw Error(index: index)
             }
         }
     }
@@ -71,7 +65,7 @@ struct StringArgumentsResolver {
                 $0.segments.count != 1
             }
             guard nonSingleSegmentedIndex == nil else {
-                throw Error.invalidArgument(index: nonSingleSegmentedIndex!)
+                throw Error(index: nonSingleSegmentedIndex!)
             }
         }
         
@@ -83,7 +77,7 @@ struct StringArgumentsResolver {
                 !$0.is(StringSegmentSyntax.self)
             }
             guard nonLiteralIndex == nil else {
-                throw Error.invalidArgument(index: nonLiteralIndex!)
+                throw Error(index: nonLiteralIndex!)
             }
             return segments.map {
                 $0.as(StringSegmentSyntax.self)!

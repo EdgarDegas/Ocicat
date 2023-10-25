@@ -5,13 +5,13 @@
 @attached(accessor)
 @attached(peer, names: arbitrary)
 public macro Ocicated(keyName: StringLiteralType? = nil) = #externalMacro(
-    module: "OcicatMacros", type: "AccessorAndKeyMacro"
+    module: "OcicatMacros", type: "AssociatedVariableMacro"
 )
 
 @attached(accessor)
 @attached(peer, names: arbitrary)
 public macro Ocicated() = #externalMacro(
-    module: "OcicatMacros", type: "AccessorAndKeyMacro"
+    module: "OcicatMacros", type: "AssociatedVariableMacro"
 )
 
 @freestanding(declaration, names: named(Keys))
