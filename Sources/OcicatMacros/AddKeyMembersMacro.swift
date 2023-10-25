@@ -18,14 +18,19 @@ public struct AddKeyMembersMacro: MemberMacro {
             return []
         }
         
-        typealias ArgumentsError = VariadicStringArgumentsResolver.Error
+        typealias ArgumentsError = StringArgumentsResolver.Error
         do {
-            let resolver = try VariadicStringArgumentsResolver(arguments: arguments)
-            return resolver.memberDeclarations
-        } catch ArgumentsError.acceptOnlyStringLiterals(let index) {
-            let error = ArgumentsError.acceptOnlyStringLiterals(index: index)
-            context.addDiagnostics(from: error, node: arguments[index])
-            return []
+            let resolver = try KeyNameArgumentsResolver(arguments: arguments)
+            return resolver.keyNameDeclarations
+        } catch let error as ArgumentsError {
+            switch error {
+            case .acceptOnlyStringLiterals(let offset),
+                 .invalidArgument(let offset)
+            :
+                let index = arguments.index(arguments.startIndex, offsetBy: offset)
+                context.addDiagnostics(from: error, node: arguments[index])
+                return []
+            }
         } catch {
             throw error
         }

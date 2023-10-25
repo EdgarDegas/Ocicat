@@ -152,7 +152,7 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
         }
         
         var getter: String {
-            let getter = "ObjcWrapper.get(from: self, by: &\(key))"
+            let getter = getterExpression(by: key.text)
             if isOptional || isImplicitlyUnwrapped {
                 return "\(getter) as? \(wrappedType)"
             } else {
@@ -162,9 +162,9 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
         
         var setter: String {
             if isWeak {
-                return "ObjcWrapper.saveWeakReference(to: newValue, into: self, by: &\(key))"
+                return weakSetterExpression(by: key.text)
             } else {
-                return "ObjcWrapper.save(newValue, into: self, by: &\(key))"
+                return setterExpression(by: key.text)
             }
         }
         

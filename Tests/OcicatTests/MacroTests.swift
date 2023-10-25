@@ -163,7 +163,7 @@ final class MacroTests: XCTestCase {
             """
         }, diagnostics: [
             DiagnosticSpec(
-                message: "Accept only literal strings, not references to String objects",
+                message: "Accept only literal strings, not even references to String objects",
                 line: 2,
                 column: 14
             )
@@ -233,7 +233,7 @@ final class MacroTests: XCTestCase {
             """
         }, diagnostics: [
             DiagnosticSpec(
-                message: "Accept only literal strings, not references to String objects",
+                message: "Accept only literal strings, not even references to String objects",
                 line: 2,
                 column: 16
             )
@@ -273,6 +273,57 @@ final class MacroTests: XCTestCase {
         }
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
+    func testGetter() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.getter) {
+            """
+            ObjcWrapper.get(from: self, by: &theKey1)
+            """
+        } originalSource: {
+            """
+            #\($0)(by: "theKey1")
+            """
+        }
+
+        #else
+        throw XCTSkip()
+        #endif
+    }
+    
+    func testSetter() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.setter) {
+            """
+            ObjcWrapper.save(newValue, into: self, by: &theKey2)
+            """
+        } originalSource: {
+            """
+            #\($0)(by: "theKey2")
+            """
+        }
+
+        #else
+        throw XCTSkip()
+        #endif
+    }
+    
+    func testWeakSetter() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.weakSetter) {
+            """
+            ObjcWrapper.saveWeakReference(to: newValue, into: self, by: &theKey3)
+            """
+        } originalSource: {
+            """
+            #\($0)(by: "theKey3")
+            """
+        }
+
+        #else
+        throw XCTSkip()
         #endif
     }
 }

@@ -23,3 +23,19 @@ public macro Keys(_: StringLiteralType...) = #externalMacro(
 public macro AddKeys(_: StringLiteralType...) = #externalMacro(
     module: "OcicatMacros", type: "AddKeyMembersMacro"
 )
+
+@freestanding(expression)
+public macro getter(by keyName: StringLiteralType) = #externalMacro(
+    module: "OcicatMacros", type: "GetterMacro"
+)
+
+
+@freestanding(expression)
+public macro setter(by keyName: StringLiteralType) = #externalMacro(
+    module: "OcicatMacros", type: "SetterMacro"
+)
+
+@freestanding(expression)
+public macro weakSetter(by keyName: StringLiteralType) = #externalMacro(
+    module: "OcicatMacros", type: "WeakSetterMacro"
+)

@@ -13,14 +13,23 @@ public struct DeclareKeysMacro: DeclarationMacro {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        typealias ArgumentsError = VariadicStringArgumentsResolver.Error
+        typealias ArgumentsError = StringArgumentsResolver.Error
         do {
-            let resolver = try VariadicStringArgumentsResolver(arguments: node.argumentList)
-            return formatedDeclarations(with: resolver.memberDeclarations)
-        } catch ArgumentsError.acceptOnlyStringLiterals(let index) {
-            let error = ArgumentsError.acceptOnlyStringLiterals(index: index)
-            context.addDiagnostics(from: error, node: node.argumentList[index])
-            return []
+            let resolver = try KeyNameArgumentsResolver(arguments: node.argumentList)
+            return formatedDeclarations(with: resolver.keyNameDeclarations)
+        } catch let error as ArgumentsError {
+            switch error {
+            case .acceptOnlyStringLiterals(let offset),
+                 .invalidArgument(let offset)
+            :
+                let argumentList = node.argumentList
+                let index = argumentList.index(
+                    argumentList.startIndex,
+                    offsetBy: offset
+                )
+                context.addDiagnostics(from: error, node: argumentList[index])
+                return []
+            }
         } catch {
             throw error
         }
