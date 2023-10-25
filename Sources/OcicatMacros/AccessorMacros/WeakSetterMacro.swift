@@ -13,7 +13,7 @@ public struct WeakSetterMacro: ExpressionMacro, AccessorExpandable {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
-        let key = try getKey(from: node.argumentList)
-        return "\(raw: weakSetterExpression(key: key, source: defaultSource))"
+        let (key, source) = try getKeyAndSource(from: node.argumentList)
+        return "\(raw: weakSetterExpression(key: key, source: source ?? defaultSource))"
     }
 }

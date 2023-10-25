@@ -334,7 +334,17 @@ final class MacroTests: XCTestCase {
             """
         } originalSource: {
             """
-            #\($0)(by: "theKey1")
+            #\($0)(key: "theKey1")
+            """
+        }
+        
+        assertMacroExpansion(.getter) {
+            """
+            ObjcWrapper.get(from: theSource1, by: &theKey11)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey11", source: "theSource1")
             """
         }
 
@@ -351,7 +361,17 @@ final class MacroTests: XCTestCase {
             """
         } originalSource: {
             """
-            #\($0)(by: "theKey2")
+            #\($0)(key: "theKey2")
+            """
+        }
+        
+        assertMacroExpansion(.setter) {
+            """
+            ObjcWrapper.save(newValue, into: theSource2, by: &theKey22)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey22", source: "theSource2")
             """
         }
 
@@ -368,7 +388,17 @@ final class MacroTests: XCTestCase {
             """
         } originalSource: {
             """
-            #\($0)(by: "theKey3")
+            #\($0)(key: "theKey3")
+            """
+        }
+        
+        assertMacroExpansion(.weakSetter) {
+            """
+            ObjcWrapper.saveWeakReference(to: newValue, into: theSource3, by: &theKey33)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey33", source: "theSource3")
             """
         }
 
