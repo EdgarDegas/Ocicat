@@ -34,7 +34,7 @@ public struct DeclareKeysMacro: DeclarationMacro, KeyGenerating {
         
         return [
             """
-            struct Keys {
+            enum Keys {
                 \(raw: memberDeclarations)
             }
             """

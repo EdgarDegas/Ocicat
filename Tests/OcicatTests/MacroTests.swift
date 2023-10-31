@@ -185,7 +185,7 @@ final class MacroTests: XCTestCase {
         #if canImport(OcicatMacros)
         assertMacroExpansion(.keys) {
             """
-            struct Keys {
+            enum Keys {
                 static var one: Void?
                 static var two: Void?
             }
@@ -300,7 +300,7 @@ final class MacroTests: XCTestCase {
             .keys, .ocicated
         ) {
             """
-            struct Keys {
+            enum Keys {
                 static var one: Void?
                 static var two: Void?
             }
