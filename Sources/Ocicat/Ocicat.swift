@@ -28,17 +28,17 @@ public macro AddKeys(_: StringLiteralType...) = #externalMacro(
 )
 
 @freestanding(expression)
-public macro getter(key: StringLiteralType, source: StringLiteralType? = nil) = #externalMacro(
+public macro getter(key: StringLiteralType, source: StringLiteralType? = nil) -> Any? = #externalMacro(
     module: "OcicatMacros", type: "GetterMacro"
 )
 
 
 @freestanding(expression)
-public macro setter(key: StringLiteralType, source: StringLiteralType? = nil) = #externalMacro(
+public macro setter(key: StringLiteralType, source: StringLiteralType? = nil) -> Void = #externalMacro(
     module: "OcicatMacros", type: "SetterMacro"
 )
 
 @freestanding(expression)
-public macro weakSetter(key: StringLiteralType, source: StringLiteralType? = nil) = #externalMacro(
+public macro weakSetter(key: StringLiteralType, source: StringLiteralType? = nil) -> Void = #externalMacro(
     module: "OcicatMacros", type: "WeakSetterMacro"
 )

@@ -9,45 +9,29 @@ class SomeDelegate {
     
 }
 
+private #Keys("key")
+
+private var source = SomeType()
 
 extension SomeType {
-    @Ocicated
+    @Ocicated(source: "source", key: "Keys.key")
     var task: SomeTask?
-
-    @Ocicated
-    var delegate: SomeDelegate?
+    
+    func f() {
+        
+    }
 }
 
-enum SomeState {
-    case empty
-}
 
 extension SomeType {
-    @Ocicated
-    var state: SomeState!
-}
-
-
-protocol SomeProtocol {
+    static var theKey: Void?
     
-}
-
-
-
-private #Keys("keyToTask", "someOtherKey")
-
-//extension SomeProtocol {
-//    @Ocicated(key: "Keys.keyToTask")
-//    var task: SomeTask?
-//}
-
-
-@AddKeys("key1", "key2")
-struct MyKeys {
-    
-}
-
-extension SomeProtocol {
-    @Ocicated(key: "MyKeys.key1")
-    var task: SomeTask?
+    var safeValue: SomeType? {
+        get {
+            #getter(key: "Self.theKey") as? SomeType
+        }
+        set {
+            #setter(key: "Self.theKey")
+        }
+    }
 }
