@@ -8,7 +8,8 @@ struct OcicatPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         AssociatedVariableMacro.self,
         GetterMacro.self,
-        SetterMacro.self
+        SetterMacro.self,
+        WeakSetterMacro.self
     ]
 }
 

@@ -66,12 +66,21 @@ final class AssociatedByRuntimeTests: XCTestCase {
         testClass.customSourcedObject = nil
         XCTAssert(testClass.customSourcedObject == nil)
     }
-//    
-//    func testCustomSourcedKeyedObject() {
-//        XCTAssertNil(testClass.customKeyedSourcedObject)
-//        testClass.customKeyedSourcedObject = 900
-//        XCTAssert(testClass.customKeyedSourcedObject == 900)
-//        testClass.customKeyedSourcedObject = nil
-//        XCTAssert(testClass.customKeyedSourcedObject == nil)
-//    }
+    
+    func testCustomSourcedKeyedObject() {
+        XCTAssertNil(testClass.customKeyedSourcedObject)
+        testClass.customKeyedSourcedObject = 900
+        XCTAssert(testClass.customKeyedSourcedObject == 900)
+        testClass.customKeyedSourcedObject = nil
+        XCTAssert(testClass.customKeyedSourcedObject == nil)
+    }
+    
+    func testWeakObject() {
+        var a: A? = A()
+        XCTAssertNil(testClass.customWeakObject)
+        testClass.customWeakObject = a
+        XCTAssert(testClass.customWeakObject === a)
+        a = nil
+        XCTAssertNil(testClass.customWeakObject)
+    }
 }

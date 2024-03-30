@@ -19,6 +19,6 @@ public macro set(_ value: Any? = nil, to source: Any? = nil, by key: Key) = #ext
 )
 
 @freestanding(expression)
-public macro weaklySet(_ value: Any, to source: Any? = nil, by key: Key) = #externalMacro(
+public macro weaklySet(_ value: Any? = nil, to source: Any? = nil, by key: Key) = #externalMacro(
     module: "OcicatMacros", type: "WeakSetterMacro"
 )
