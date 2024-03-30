@@ -8,7 +8,10 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
+public struct AssociatedVariableMacro: 
+    PeerMacro,
+    AccessorMacro
+{
     public enum Error: Swift.Error, CustomStringConvertible {
         case onlyApplicableToVariables
         case failedToFindPatternBinding
@@ -16,7 +19,6 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         case mustHasTypeAnnotation
         case nonOptionalVariableMustHaveADefaultValue
         case initialzedButOptional
-        case invalidCustomKey
         
         public var description: String {
             switch self {
@@ -32,8 +34,6 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
                 return "You must initialize non-optional variables to provide them with a default value."
             case .initialzedButOptional:
                 return "You should not initialize a variable that's optional. Use non-optional to have a default value."
-            case .invalidCustomKey:
-                return "Custom key should be contiguous."
             }
         }
     }
@@ -43,17 +43,10 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        let argumentResolver = try ArgumentResolver(node: node)
-        if argumentResolver.key != nil {
-            return []
-        } else {
-            let resolver = try Resolver(
-                declaration: declaration, 
-                customKey: nil,
-                customSource: nil
-            )
-            return ["fileprivate static var \(raw: resolver.nameOfDefaultKey): Void?"]
-        }
+        let resolver = try Resolver(
+            declaration: declaration
+        )
+        return ["fileprivate static var \(raw: resolver.nameOfDefaultKey): Void?"]
     }
     
     public static func expansion(
@@ -61,11 +54,8 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         providingAccessorsOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [SwiftSyntax.AccessorDeclSyntax] {
-        let argumentResolver = try ArgumentResolver(node: node)
         let resolver = try Resolver(
-            declaration: declaration,
-            customKey: argumentResolver.key,
-            customSource: argumentResolver.source
+            declaration: declaration
         )
         return [
             """
@@ -79,40 +69,14 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         ]
     }
     
-    struct ArgumentResolver {
-        enum ArgumentLabel: String {
-            case key
-            case source
-        }
-        
-        let key: String?
-        let source: String?
-        
-        init(node: AttributeSyntax) throws {
-            guard let arguments = node.arguments?.as(LabeledExprListSyntax.self) else {
-                key = nil
-                source = nil
-                return
-            }
-            let stringArgumentsResolver = try StringArgumentsResolver(
-                arguments: arguments
-            )
-            key = stringArgumentsResolver.argument(by: ArgumentLabel.key.rawValue)
-            source = stringArgumentsResolver.argument(by: ArgumentLabel.source.rawValue)
-        }
-        
-        static func getKey(from segments: StringLiteralSegmentListSyntax) -> TokenSyntax? {
-            segments.first?.as(StringSegmentSyntax.self)?.content
-        }
-    }
-    
     struct Resolver {
         let declaration: VariableDeclSyntax
         let binding: PatternBindingSyntax
         let variableName: String
         let typeAnnotation: TypeAnnotationSyntax
-        let customKey: String?
-        let source: String
+        var source: ExprSyntax {
+            defaultSource
+        }
         
         var defaultValue: ExprSyntax?
         
@@ -121,12 +85,8 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
             return "keyTo\(variableName.first!.uppercased())\(variableName.dropFirst())"
         }
         
-        var key: String {
-            if let customKey = customKey {
-                return customKey
-            } else {
-                return "Self.\(nameOfDefaultKey)"
-            }
+        var key: ExprSyntax {
+            "Self.\(raw: nameOfDefaultKey)"
         }
         
         var type: TypeSyntax {
@@ -166,22 +126,19 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
             }
         }
         
-        var setter: String {
+        var setter: ExprSyntax {
             if isWeak {
-                return weakSetterExpression(key: key, source: source)
+                return weakSetterExpression(
+                    value: setterNewValue, key: key, source: source
+                )
             } else {
-                return setterExpression(key: key, source: source)
+                return setterExpression(
+                    value: setterNewValue, key: key, source: source
+                )
             }
         }
         
-        init(
-            declaration: some DeclSyntaxProtocol,
-            customKey: String?,
-            customSource: String?
-        ) throws {
-            self.customKey = customKey
-            self.source = customSource ?? defaultSource
-            
+        init(declaration: some DeclSyntaxProtocol) throws {
             guard let declaration = declaration.as(VariableDeclSyntax.self) else {
                 throw Error.onlyApplicableToVariables
             }
@@ -231,10 +188,10 @@ public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
         }
         
         static func getNameOfVariable(from binding: PatternBindingSyntax) throws -> String {
-            guard let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier else {
+            guard let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text else {
                 throw Error.patternBindingNotIdentifiable
             }
-            return name.text
+            return name
         }
     }
 }

@@ -51,14 +51,27 @@ final class AssociatedByRuntimeTests: XCTestCase {
         XCTAssertNil(testClass.weakRef)
     }
     
-    func testCustomKeyedObject() {
-        XCTAssertNil(testClass.customKeyedObject)
-        
-        let value = 54
-        testClass.customKeyedObject = value
-        XCTAssertEqual(testClass.customKeyedObject, value)
-        
-        testClass.customKeyedObject = nil
-        XCTAssertNil(testClass.customKeyedObject)
+    func testGetterSetterObject() {
+        XCTAssertNil(testClass.getterSetterObject)
+        testClass.getterSetterObject = 40
+        XCTAssert(testClass.getterSetterObject == 40)
+        testClass.getterSetterObject = nil
+        XCTAssert(testClass.getterSetterObject == nil)
     }
+    
+    func testCustomSourcedObject() {
+        XCTAssertNil(testClass.customSourcedObject)
+        testClass.customSourcedObject = 400
+        XCTAssert(testClass.customSourcedObject == 400)
+        testClass.customSourcedObject = nil
+        XCTAssert(testClass.customSourcedObject == nil)
+    }
+//    
+//    func testCustomSourcedKeyedObject() {
+//        XCTAssertNil(testClass.customKeyedSourcedObject)
+//        testClass.customKeyedSourcedObject = 900
+//        XCTAssert(testClass.customKeyedSourcedObject == 900)
+//        testClass.customKeyedSourcedObject = nil
+//        XCTAssert(testClass.customKeyedSourcedObject == nil)
+//    }
 }

@@ -9,33 +9,15 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-struct StringArgumentsResolver {
-    struct Error: Swift.Error, CustomStringConvertible {
-        let index: SyntaxChildrenIndex
-        
-        var description: String {
-            "Argument is invalid. Accept only contiguous, non-interpolated literal String objects"
-        }
-    }
-    
+struct LabeledArgumentsResolver {
     struct LabeledArgument {
         let label: String?
-        let value: String?
-    }
-    
-    var nonNilStringArguments: [String] {
-        arguments.compactMap {
-            $0.value
-        }
-    }
-    
-    var stringArguments: [String?] {
-        arguments.map(\.value)
+        let value: ExprSyntax?
     }
     
     let arguments: [LabeledArgument]
     
-    func argument(by label: String) -> String? {
+    func argument(by label: String) -> ExprSyntax? {
         arguments.first { $0.label == label }?.value
     }
     
@@ -53,27 +35,14 @@ struct StringArgumentsResolver {
         let label = rawArguments[index].label?.text
         if expressionIsNil() {
             return LabeledArgument(label: label, value: nil)
-        } else if let string = try getString() {
-            return LabeledArgument(label: label, value: string)
         } else {
-            throw Error(index: index)
+            return LabeledArgument(
+                label: label, value: expression
+            )
         }
-        
         
         func expressionIsNil() -> Bool {
             expression.is(NilLiteralExprSyntax.self)
-        }
-        
-        func getString() throws -> String? {
-            if let expression = expression.as(StringLiteralExprSyntax.self) {
-                if let string = Self.getString(from: expression) {
-                    return string
-                } else {
-                    throw Error(index: index)
-                }
-            } else {
-                return nil
-            }
         }
     }
     
