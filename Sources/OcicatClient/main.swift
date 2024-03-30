@@ -9,29 +9,17 @@ class SomeDelegate {
     
 }
 
-private #Keys("key")
-
 private var source = SomeType()
 
 extension SomeType {
-    @Ocicated(source: "source", key: "Keys.key")
-    var task: SomeTask?
-    
-    func f() {
-        
-    }
-}
-
-
-extension SomeType {
-    static var theKey: Void?
+    static var theKey: Key = nil
     
     var safeValue: SomeType? {
         get {
-            #getter(key: "Self.theKey") as? SomeType
+            #get(by: Self.theKey) as? SomeType
         }
         set {
-            #setter(key: "Self.theKey")
+            #set(by: Self.theKey)
         }
     }
 }

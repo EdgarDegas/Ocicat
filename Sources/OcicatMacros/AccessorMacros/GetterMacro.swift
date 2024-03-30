@@ -8,12 +8,14 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct GetterMacro: ExpressionMacro, AccessorExpandable {
+public struct GetterMacro: ExpressionMacro, SetterExpandable {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
-        let (key, source) = try getKeyAndSource(from: node.argumentList)
-        return "\(raw: getterExpression(key: key, source: source ?? defaultSource))"
+        let (key, source) = try getterKeySource(from: node.argumentList)
+        return getterExpression(
+            key: key, source: source ?? defaultSource
+        )
     }
 }

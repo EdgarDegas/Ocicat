@@ -8,7 +8,10 @@
 import Foundation
 import Ocicat
 
-#Keys("custom")
+class A { }
+
+var anotherInstance = A()
+var sourceForWeakObject = A()
 
 final class TestClass {
     @Ocicated
@@ -24,6 +27,47 @@ final class TestClass {
     @Ocicated
     weak var weakRef: NSObject?
     
-    @Ocicated(key: "Keys.custom")
-    var customKeyedObject: Int?
+    var getterSetterKey: Key = nil
+    
+    var getterSetterObject: Int? {
+        get {
+            #get(by: getterSetterKey) as? Int
+        }
+        set {
+            #set(by: getterSetterKey)
+        }
+    }
+    
+    static var customSourcedKey: Key = nil
+    
+    var customSourcedObject: Int? {
+        get {
+            #get(from: anotherInstance, by: Self.customSourcedKey) as? Int
+        }
+        set {
+            #set(to: anotherInstance, by: Self.customSourcedKey)
+        }
+    }
+    
+    var another1 = 1
+    var customSourcedKey1: Key = nil
+    
+    var customKeyedSourcedObject: Int? {
+        get {
+            #get(from: another1, by: customSourcedKey1) as? Int
+        }
+        set {
+            #set(to: another1, by: customSourcedKey1)
+        }
+    }
+    
+    var keyToCustomWeakObject: Key = nil
+    var customWeakObject: A? {
+        get {
+            #get(from: sourceForWeakObject, by: keyToCustomWeakObject) as? A
+        }
+        set {
+            #weaklySet(to: sourceForWeakObject, by: keyToCustomWeakObject)
+        }
+    }
 }

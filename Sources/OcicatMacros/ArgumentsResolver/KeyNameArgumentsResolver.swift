@@ -8,16 +8,22 @@
 import Foundation
 import SwiftSyntax
 
-struct KeyArgumentsResolver {
-    let variadicStringResolver: StringArgumentsResolver
+struct VariadicArgumentsResolver {
+    let variadicStringResolver: LabeledArgumentsResolver
     
     let keyDeclarations: [DeclSyntax]
     
     init(arguments: LabeledExprListSyntax) throws {
-        variadicStringResolver = try StringArgumentsResolver(arguments: arguments)
-        keyDeclarations = variadicStringResolver.nonNilStringArguments
+        variadicStringResolver = try LabeledArgumentsResolver(arguments: arguments)
+        keyDeclarations = variadicStringResolver.arguments
+            .compactMap {
+                $0.value
+            }
+            .compactMap {
+                $0.as(StringLiteralExprSyntax.self)
+            }
             .map {
-                "static var \(raw: $0): Void?"
+                "static var \($0.segments): Void?"
             }
     }
 }

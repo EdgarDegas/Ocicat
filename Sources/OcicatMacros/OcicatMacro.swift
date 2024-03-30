@@ -7,25 +7,28 @@ import SwiftSyntaxMacros
 struct OcicatPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         AssociatedVariableMacro.self,
-        DeclareKeysMacro.self,
-        AddKeyMembersMacro.self,
         GetterMacro.self,
-        SetterMacro.self
+        SetterMacro.self,
+        WeakSetterMacro.self
     ]
 }
 
-func getterExpression(key: String, source: String) -> String {
+func getterExpression(key: ExprSyntax, source: ExprSyntax) -> ExprSyntax {
     "ObjcWrapper.get(from: \(source), by: &\(key))"
 }
 
-func setterExpression(key: String, source: String) -> String {
-    "ObjcWrapper.save(newValue, into: \(source), by: &\(key))"
+func setterExpression(value: ExprSyntax, key: ExprSyntax, source: ExprSyntax) -> ExprSyntax {
+    "ObjcWrapper.save(\(value), into: \(source), by: &\(key))"
 }
 
-func weakSetterExpression(key: String, source: String) -> String {
-    "ObjcWrapper.saveWeakReference(to: newValue, into: \(source), by: &\(key))"
+func weakSetterExpression(value: ExprSyntax, key: ExprSyntax, source: ExprSyntax) -> ExprSyntax {
+    "ObjcWrapper.saveWeakReference(to: \(value), into: \(source), by: &\(key))"
 }
 
-var defaultSource: String {
+var defaultSource: ExprSyntax {
     "self"
+}
+
+var setterNewValue: ExprSyntax {
+    "newValue"
 }

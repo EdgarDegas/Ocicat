@@ -8,12 +8,17 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct WeakSetterMacro: ExpressionMacro, AccessorExpandable {
+public struct WeakSetterMacro: ExpressionMacro, SetterExpandable {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
-        let (key, source) = try getKeyAndSource(from: node.argumentList)
-        return "\(raw: weakSetterExpression(key: key, source: source ?? defaultSource))"
+        let (value, key, source) = try setterValueKeySource(from: node.argumentList)
+        let expr = weakSetterExpression(
+            value: value ?? setterNewValue,
+            key: key,
+            source: source ?? defaultSource
+        )
+        return "\(expr)"
     }
 }

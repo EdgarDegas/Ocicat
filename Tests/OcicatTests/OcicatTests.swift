@@ -9,8 +9,6 @@ import SwiftSyntax
 
 enum TestMacro: CaseIterable {
     case ocicated
-    case keys
-    case addKeys
     case getter
     case setter
     case weakSetter
@@ -18,11 +16,9 @@ enum TestMacro: CaseIterable {
     var name: String {
         switch self {
         case .ocicated: return "Ocicated"
-        case .keys: return "Keys"
-        case .addKeys: return "AddKeys"
-        case .getter: return "getter"
-        case .setter: return "setter"
-        case .weakSetter: return "weakSetter"
+        case .getter: return "get"
+        case .setter: return "set"
+        case .weakSetter: return "weaklySet"
         }
     }
     
@@ -30,10 +26,6 @@ enum TestMacro: CaseIterable {
         switch self {
         case .ocicated:
             return AssociatedVariableMacro.self
-        case .keys:
-            return DeclareKeysMacro.self
-        case .addKeys:
-            return AddKeyMembersMacro.self
         case .getter:
             return GetterMacro.self
         case .setter:
