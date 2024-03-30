@@ -8,21 +8,20 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct DeclareKeysMacro: DeclarationMacro {
+public struct DeclareKeysMacro: DeclarationMacro, KeyGenerating {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        typealias ArgumentsError = VariadicStringArgumentsResolver.Error
-        do {
-            let resolver = try VariadicStringArgumentsResolver(arguments: node.argumentList)
-            return formatedDeclarations(with: resolver.memberDeclarations)
-        } catch ArgumentsError.acceptOnlyStringLiterals(let index) {
-            let error = ArgumentsError.acceptOnlyStringLiterals(index: index)
-            context.addDiagnostics(from: error, node: node.argumentList[index])
+        let argumentList = node.argumentList
+        let declarations = try getKeyDeclarations(
+            from: argumentList,
+            in: context
+        )
+        if declarations.isEmpty {
             return []
-        } catch {
-            throw error
+        } else {
+            return formatedDeclarations(with: declarations)
         }
     }
     
@@ -35,7 +34,7 @@ public struct DeclareKeysMacro: DeclarationMacro {
         
         return [
             """
-            struct Keys {
+            enum Keys {
                 \(raw: memberDeclarations)
             }
             """

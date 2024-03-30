@@ -24,6 +24,6 @@ final class TestClass {
     @Ocicated
     weak var weakRef: NSObject?
     
-    @Ocicated(keyName: "Keys.custom")
+    @Ocicated(key: "Keys.custom")
     var customKeyedObject: Int?
 }

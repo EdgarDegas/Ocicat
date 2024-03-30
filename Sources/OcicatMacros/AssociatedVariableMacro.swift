@@ -8,7 +8,7 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
+public struct AssociatedVariableMacro: PeerMacro, AccessorMacro {
     public enum Error: Swift.Error, CustomStringConvertible {
         case onlyApplicableToVariables
         case failedToFindPatternBinding
@@ -44,11 +44,15 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [DeclSyntax] {
         let argumentResolver = try ArgumentResolver(node: node)
-        if argumentResolver.customKey != nil {
+        if argumentResolver.key != nil {
             return []
         } else {
-            let resolver = try Resolver(declaration: declaration, customKeyName: nil)
-            return ["fileprivate static var \(resolver.keyName): Void?"]
+            let resolver = try Resolver(
+                declaration: declaration, 
+                customKey: nil,
+                customSource: nil
+            )
+            return ["fileprivate static var \(raw: resolver.nameOfDefaultKey): Void?"]
         }
     }
     
@@ -58,7 +62,11 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [SwiftSyntax.AccessorDeclSyntax] {
         let argumentResolver = try ArgumentResolver(node: node)
-        let resolver = try Resolver(declaration: declaration, customKeyName: argumentResolver.customKey)
+        let resolver = try Resolver(
+            declaration: declaration,
+            customKey: argumentResolver.key,
+            customSource: argumentResolver.source
+        )
         return [
             """
             get {
@@ -72,31 +80,28 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
     }
     
     struct ArgumentResolver {
-        private let expression: StringLiteralExprSyntax?
-        let customKey: TokenSyntax?
+        enum ArgumentLabel: String {
+            case key
+            case source
+        }
+        
+        let key: String?
+        let source: String?
         
         init(node: AttributeSyntax) throws {
-            guard let expression = Self.getExpression(from: node) else {
-                expression = nil
-                customKey = nil
+            guard let arguments = node.arguments?.as(LabeledExprListSyntax.self) else {
+                key = nil
+                source = nil
                 return
             }
-            self.expression = expression
-            
-            guard
-                expression.segments.count == 1,
-                let keyName = Self.getKeyName(from: expression.segments)
-            else {
-                throw Error.invalidCustomKey
-            }
-            customKey = keyName
+            let stringArgumentsResolver = try StringArgumentsResolver(
+                arguments: arguments
+            )
+            key = stringArgumentsResolver.argument(by: ArgumentLabel.key.rawValue)
+            source = stringArgumentsResolver.argument(by: ArgumentLabel.source.rawValue)
         }
         
-        static func getExpression(from node: AttributeSyntax) -> StringLiteralExprSyntax? {
-            node.arguments?.as(LabeledExprListSyntax.self)?.first?.expression.as(StringLiteralExprSyntax.self)
-        }
-        
-        static func getKeyName(from segments: StringLiteralSegmentListSyntax) -> TokenSyntax? {
+        static func getKey(from segments: StringLiteralSegmentListSyntax) -> TokenSyntax? {
             segments.first?.as(StringSegmentSyntax.self)?.content
         }
     }
@@ -104,22 +109,23 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
     struct Resolver {
         let declaration: VariableDeclSyntax
         let binding: PatternBindingSyntax
-        let variableName: TokenSyntax
+        let variableName: String
         let typeAnnotation: TypeAnnotationSyntax
-        let customKeyName: TokenSyntax?
+        let customKey: String?
+        let source: String
         
         var defaultValue: ExprSyntax?
         
-        var keyName: TokenSyntax {
-            let variableName = variableName.text
-            return "keyTo\(raw: variableName.first!.uppercased())\(raw: variableName.dropFirst())"
+        var nameOfDefaultKey: String {
+            let variableName = variableName
+            return "keyTo\(variableName.first!.uppercased())\(variableName.dropFirst())"
         }
         
-        var key: TokenSyntax {
-            if let customKeyName = customKeyName {
-                return customKeyName
+        var key: String {
+            if let customKey = customKey {
+                return customKey
             } else {
-                return "Self.\(keyName)"
+                return "Self.\(nameOfDefaultKey)"
             }
         }
         
@@ -152,7 +158,7 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
         }
         
         var getter: String {
-            let getter = "ObjcWrapper.get(from: self, by: &\(key))"
+            let getter = getterExpression(key: key, source: source)
             if isOptional || isImplicitlyUnwrapped {
                 return "\(getter) as? \(wrappedType)"
             } else {
@@ -162,17 +168,19 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
         
         var setter: String {
             if isWeak {
-                return "ObjcWrapper.saveWeakReference(to: newValue, into: self, by: &\(key))"
+                return weakSetterExpression(key: key, source: source)
             } else {
-                return "ObjcWrapper.save(newValue, into: self, by: &\(key))"
+                return setterExpression(key: key, source: source)
             }
         }
         
         init(
             declaration: some DeclSyntaxProtocol,
-            customKeyName: TokenSyntax?
+            customKey: String?,
+            customSource: String?
         ) throws {
-            self.customKeyName = customKeyName
+            self.customKey = customKey
+            self.source = customSource ?? defaultSource
             
             guard let declaration = declaration.as(VariableDeclSyntax.self) else {
                 throw Error.onlyApplicableToVariables
@@ -222,11 +230,11 @@ public struct AccessorAndKeyMacro: PeerMacro, AccessorMacro {
             return binding
         }
         
-        static func getNameOfVariable(from binding: PatternBindingSyntax) throws -> TokenSyntax {
+        static func getNameOfVariable(from binding: PatternBindingSyntax) throws -> String {
             guard let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier else {
                 throw Error.patternBindingNotIdentifiable
             }
-            return name
+            return name.text
         }
     }
 }

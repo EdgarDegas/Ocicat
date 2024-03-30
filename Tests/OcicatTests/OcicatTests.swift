@@ -11,23 +11,35 @@ enum TestMacro: CaseIterable {
     case ocicated
     case keys
     case addKeys
+    case getter
+    case setter
+    case weakSetter
     
     var name: String {
         switch self {
         case .ocicated: return "Ocicated"
         case .keys: return "Keys"
         case .addKeys: return "AddKeys"
+        case .getter: return "getter"
+        case .setter: return "setter"
+        case .weakSetter: return "weakSetter"
         }
     }
     
     var type: Macro.Type {
         switch self {
         case .ocicated:
-            return AccessorAndKeyMacro.self
+            return AssociatedVariableMacro.self
         case .keys:
             return DeclareKeysMacro.self
         case .addKeys:
             return AddKeyMembersMacro.self
+        case .getter:
+            return GetterMacro.self
+        case .setter:
+            return SetterMacro.self
+        case .weakSetter:
+            return WeakSetterMacro.self
         }
     }
     

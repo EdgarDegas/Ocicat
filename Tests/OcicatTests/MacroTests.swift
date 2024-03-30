@@ -17,7 +17,7 @@ final class MacroTests: XCTestCase {
                 }
             }
             
-            private static var keyToObject: Void?
+            fileprivate static var keyToObject: Void?
             """
         } originalSource: {
             """
@@ -43,7 +43,7 @@ final class MacroTests: XCTestCase {
                 }
             }
             
-            private static var keyToNonOptional: Void?
+            fileprivate static var keyToNonOptional: Void?
             """
         } originalSource: {
             """
@@ -68,7 +68,7 @@ final class MacroTests: XCTestCase {
                 }
             }
             
-            private static var keyToUnwrappedObject: Void?
+            fileprivate static var keyToUnwrappedObject: Void?
             """
         } originalSource: {
             """
@@ -94,7 +94,7 @@ final class MacroTests: XCTestCase {
                 }
             }
             
-            private static var keyToWeakRef: Void?
+            fileprivate static var keyToWeakRef: Void?
             """
         } originalSource: {
             """
@@ -122,8 +122,58 @@ final class MacroTests: XCTestCase {
             """
         } originalSource: {
             """
-            @\($0)(keyName: "customKey")
+            @\($0)(key: "customKey")
             var customKeyedObject: Int?
+            """
+        }
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
+    func testCustomSourcedObject() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.ocicated) {
+            """
+            var customSourcedObject: Int? {
+                get {
+                    ObjcWrapper.get(from: notSelf, by: &Self.keyToCustomSourcedObject) as? Int
+                }
+                set {
+                    ObjcWrapper.save(newValue, into: notSelf, by: &Self.keyToCustomSourcedObject)
+                }
+            }
+            
+            fileprivate static var keyToCustomSourcedObject: Void?
+            """
+        } originalSource: {
+            """
+            @\($0)(source: "notSelf")
+            var customSourcedObject: Int?
+            """
+        }
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
+    func testCustomSourcedCustomKeyedObject() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.ocicated) {
+            """
+            var customizedObject: Int? {
+                get {
+                    ObjcWrapper.get(from: customSource, by: &customKey) as? Int
+                }
+                set {
+                    ObjcWrapper.save(newValue, into: customSource, by: &customKey)
+                }
+            }
+            """
+        } originalSource: {
+            """
+            @\($0)(source: "customSource", key: "customKey")
+            var customizedObject: Int?
             """
         }
         #else
@@ -135,7 +185,7 @@ final class MacroTests: XCTestCase {
         #if canImport(OcicatMacros)
         assertMacroExpansion(.keys) {
             """
-            struct Keys {
+            enum Keys {
                 static var one: Void?
                 static var two: Void?
             }
@@ -163,7 +213,7 @@ final class MacroTests: XCTestCase {
             """
         }, diagnostics: [
             DiagnosticSpec(
-                message: "Accept only literal strings, not references to String objects",
+                message: "Argument is invalid. Accept only contiguous, non-interpolated literal String objects",
                 line: 2,
                 column: 14
             )
@@ -233,7 +283,7 @@ final class MacroTests: XCTestCase {
             """
         }, diagnostics: [
             DiagnosticSpec(
-                message: "Accept only literal strings, not references to String objects",
+                message: "Argument is invalid. Accept only contiguous, non-interpolated literal String objects",
                 line: 2,
                 column: 16
             )
@@ -250,7 +300,7 @@ final class MacroTests: XCTestCase {
             .keys, .ocicated
         ) {
             """
-            struct Keys {
+            enum Keys {
                 static var one: Void?
                 static var two: Void?
             }
@@ -267,12 +317,93 @@ final class MacroTests: XCTestCase {
             """
             #\($0[0])("one", "two")
             
-            @\($0[1])(customKeyName: "Keys.one")
+            @\($0[1])(key: "Keys.one")
             var customKeyedObject: Int?
             """
         }
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
+    func testGetter() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.getter) {
+            """
+            ObjcWrapper.get(from: self, by: &theKey1)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey1")
+            """
+        }
+        
+        assertMacroExpansion(.getter) {
+            """
+            ObjcWrapper.get(from: theSource1, by: &theKey11)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey11", source: "theSource1")
+            """
+        }
+
+        #else
+        throw XCTSkip()
+        #endif
+    }
+    
+    func testSetter() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.setter) {
+            """
+            ObjcWrapper.save(newValue, into: self, by: &theKey2)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey2")
+            """
+        }
+        
+        assertMacroExpansion(.setter) {
+            """
+            ObjcWrapper.save(newValue, into: theSource2, by: &theKey22)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey22", source: "theSource2")
+            """
+        }
+
+        #else
+        throw XCTSkip()
+        #endif
+    }
+    
+    func testWeakSetter() throws {
+        #if canImport(OcicatMacros)
+        assertMacroExpansion(.weakSetter) {
+            """
+            ObjcWrapper.saveWeakReference(to: newValue, into: self, by: &theKey3)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey3")
+            """
+        }
+        
+        assertMacroExpansion(.weakSetter) {
+            """
+            ObjcWrapper.saveWeakReference(to: newValue, into: theSource3, by: &theKey33)
+            """
+        } originalSource: {
+            """
+            #\($0)(key: "theKey33", source: "theSource3")
+            """
+        }
+
+        #else
+        throw XCTSkip()
         #endif
     }
 }
